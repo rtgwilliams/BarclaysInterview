@@ -7,19 +7,23 @@ import java.util.UUID;
 import org.springframework.stereotype.Service;
 
 import com.example.eaglebank.exception.BadRequestException;
+import com.example.eaglebank.exception.UserHasBankAccountsException;
 import com.example.eaglebank.exception.UserNotFoundException;
 import com.example.eaglebank.model.domain.NewUser;
 import com.example.eaglebank.model.domain.ProcessedUser;
 import com.example.eaglebank.model.domain.UserUpdate;
 import com.example.eaglebank.model.json.BadRequestErrorResponse.ValidationError;
+import com.example.eaglebank.repository.BankAccountRepository;
 import com.example.eaglebank.repository.UserRepository;
 
 @Service
 public class UserService {
     private final UserRepository userRepository;
+    private final BankAccountRepository bankAccountRepository;
 
-    public UserService(final UserRepository userRepository) {
+    public UserService(final UserRepository userRepository, final BankAccountRepository bankAccountRepository) {
         this.userRepository = userRepository;
+        this.bankAccountRepository = bankAccountRepository;
     }
 
     public ProcessedUser createUser(final NewUser newUser) {
@@ -56,6 +60,9 @@ public class UserService {
 
     public void deleteUser(final String userId) {
         getUser(userId);
+        if (bankAccountRepository.existsByUserId(userId)) {
+            throw new UserHasBankAccountsException();
+        }
         userRepository.deleteUser(userId);
     }
 
