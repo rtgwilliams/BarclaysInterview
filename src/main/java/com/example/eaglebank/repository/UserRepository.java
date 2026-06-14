@@ -20,13 +20,6 @@ public class UserRepository {
         return userDatabase.get(userId);
     }
 
-    public ProcessedUser findByEmail(final String email) {
-        return userDatabase.values().stream()
-                .filter(user -> user.getEmail().equalsIgnoreCase(email))
-                .findFirst()
-                .orElse(null);
-    }
-
     public void deleteUser(final String userId) {
         userDatabase.remove(userId);
     }

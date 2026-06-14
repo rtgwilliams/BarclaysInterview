@@ -8,7 +8,6 @@ import com.example.eaglebank.model.domain.UserUpdate;
 import com.example.eaglebank.model.json.CreateUserRequest;
 import com.example.eaglebank.model.json.UpdateUserRequest;
 import com.example.eaglebank.model.json.UserResponse;
-import com.example.eaglebank.service.AuthService;
 import com.example.eaglebank.service.UserService;
 import com.example.eaglebank.transformer.UserTransformer;
 import com.example.eaglebank.validation.UserRequestValidator;
@@ -31,17 +30,11 @@ public class UserController {
     private final UserService userService;
     private final UserTransformer userTransformer;
     private final UserRequestValidator userRequestValidator;
-    private final AuthService authService;
 
-    public UserController(
-            final UserService userService,
-            final UserTransformer userTransformer,
-            final UserRequestValidator userRequestValidator,
-            final AuthService authService) {
-        this.userService = userService;
-        this.userTransformer = userTransformer;
-        this.userRequestValidator = userRequestValidator;
-        this.authService = authService;
+    public UserController() {
+        this.userService = new UserService();
+        this.userTransformer = new UserTransformer();
+        this.userRequestValidator = new UserRequestValidator();
     }
 
     @PostMapping
@@ -56,33 +49,23 @@ public class UserController {
 
     @GetMapping("/{userId}")
     @ResponseStatus(HttpStatus.OK)
-    public UserResponse getUser(
-            @PathVariable final String userId,
-            @RequestHeader(value = "Authorization", required = false) final String authorizationHeader) {
+    public UserResponse getUser(@PathVariable final String userId) {
         userRequestValidator.validateUserId(userId);
-        authService.requireUserAccess(authorizationHeader, userId);
         final ProcessedUser processedUser = userService.getUser(userId);
         return userTransformer.toUserResponse(processedUser);
     }
 
     @DeleteMapping("/{userId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteUser(
-            @PathVariable final String userId,
-            @RequestHeader(value = "Authorization", required = false) final String authorizationHeader) {
+    public void deleteUser(@PathVariable final String userId) {
         userRequestValidator.validateUserId(userId);
-        authService.requireUserAccess(authorizationHeader, userId);
         userService.deleteUser(userId);
     }
 
     @PatchMapping("/{userId}")
     @ResponseStatus(HttpStatus.OK)
-    public UserResponse updateUser(
-            @PathVariable final String userId,
-            @RequestHeader(value = "Authorization", required = false) final String authorizationHeader,
-            @RequestBody final UpdateUserRequest user) {
+    public UserResponse updateUser(@PathVariable final String userId, @RequestBody final UpdateUserRequest user) {
         userRequestValidator.validateUserId(userId);
-        authService.requireUserAccess(authorizationHeader, userId);
         userRequestValidator.validateUpdateUser(user);
         final UserUpdate userUpdate = userTransformer.toUserUpdate(user);
         final ProcessedUser updatedUser = userService.updateUser(userId, userUpdate);
