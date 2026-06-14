@@ -3,13 +3,13 @@ package com.example.eaglebank.service;
 import java.time.Instant;
 import java.util.UUID;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
-import com.example.eaglebank.exception.UserHasBankAccountsException;
-import com.example.eaglebank.exception.UserNotFoundException;
-import com.example.eaglebank.model.domain.NewUser;
+import com.example.eaglebank.exception.ApiException;
 import com.example.eaglebank.model.domain.ProcessedUser;
-import com.example.eaglebank.model.domain.UserUpdate;
+import com.example.eaglebank.model.json.CreateUserRequest;
+import com.example.eaglebank.model.json.UpdateUserRequest;
 import com.example.eaglebank.repository.BankAccountRepository;
 import com.example.eaglebank.repository.UserRepository;
 
@@ -23,7 +23,7 @@ public class UserService {
         this.bankAccountRepository = bankAccountRepository;
     }
 
-    public ProcessedUser createUser(final NewUser newUser) {
+    public ProcessedUser createUser(final CreateUserRequest newUser) {
         final Instant now = Instant.now();
         final ProcessedUser processedUser = new ProcessedUser(
                 generateUserId(),
@@ -40,7 +40,7 @@ public class UserService {
     public ProcessedUser getUser(final String userId) {
         final ProcessedUser user = userRepository.getUser(userId);
         if (user == null) {
-            throw new UserNotFoundException(userId);
+            throw new ApiException(HttpStatus.NOT_FOUND, "User was not found: " + userId);
         }
         return user;
     }
@@ -52,12 +52,14 @@ public class UserService {
     public void deleteUser(final String userId) {
         getUser(userId);
         if (bankAccountRepository.existsByUserId(userId)) {
-            throw new UserHasBankAccountsException();
+            throw new ApiException(
+                    HttpStatus.CONFLICT,
+                    "A user cannot be deleted when they are associated with a bank account");
         }
         userRepository.deleteUser(userId);
     }
 
-    public ProcessedUser updateUser(final String userId, final UserUpdate userUpdate) {
+    public ProcessedUser updateUser(final String userId, final UpdateUserRequest userUpdate) {
         final ProcessedUser existingUser = getUser(userId);
         final ProcessedUser updatedUser = new ProcessedUser(
                 existingUser.getId(),

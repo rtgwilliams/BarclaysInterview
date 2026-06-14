@@ -4,9 +4,10 @@ import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.regex.Pattern;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
-import com.example.eaglebank.exception.UnauthorizedException;
+import com.example.eaglebank.exception.ApiException;
 
 @Service
 public class JwtService {
@@ -22,17 +23,21 @@ public class JwtService {
         try {
             final String[] parts = token.split("\\.");
             if (parts.length < 2) {
-                throw new UnauthorizedException("Access token is missing or invalid");
+                throw invalidToken();
             }
 
             return SUBJECT_PATTERN.matcher(decodeBase64Url(parts[1]))
                     .results()
                     .findFirst()
                     .map(match -> match.group(1))
-                    .orElseThrow(() -> new UnauthorizedException("Access token is missing or invalid"));
+                    .orElseThrow(this::invalidToken);
         } catch (IllegalArgumentException exception) {
-            throw new UnauthorizedException("Access token is missing or invalid");
+            throw invalidToken();
         }
+    }
+
+    private ApiException invalidToken() {
+        return new ApiException(HttpStatus.UNAUTHORIZED, "Access token is missing or invalid");
     }
 
     private String base64Url(final String value) {

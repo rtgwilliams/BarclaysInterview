@@ -4,11 +4,10 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
-import com.example.eaglebank.exception.BankAccountNotFoundException;
-import com.example.eaglebank.exception.ForbiddenException;
-import com.example.eaglebank.exception.InsufficientFundsException;
+import com.example.eaglebank.exception.ApiException;
 import com.example.eaglebank.model.domain.BankAccount;
 import com.example.eaglebank.model.json.CreateBankAccountRequest;
 import com.example.eaglebank.repository.BankAccountRepository;
@@ -46,10 +45,10 @@ public class BankAccountService {
     public BankAccount getAccountForUser(final String accountNumber, final String userId) {
         final BankAccount bankAccount = bankAccountRepository.getAccount(accountNumber);
         if (bankAccount == null) {
-            throw new BankAccountNotFoundException(accountNumber);
+            throw new ApiException(HttpStatus.NOT_FOUND, "Bank account was not found: " + accountNumber);
         }
         if (!bankAccount.getUserId().equals(userId)) {
-            throw new ForbiddenException("The user is not allowed to access the bank account details");
+            throw new ApiException(HttpStatus.FORBIDDEN, "The user is not allowed to access the bank account details");
         }
         return bankAccount;
     }
@@ -85,7 +84,7 @@ public class BankAccountService {
 
         final BigDecimal newBalance = currentBalance.subtract(amount).setScale(2);
         if (newBalance.compareTo(ZERO) < 0) {
-            throw new InsufficientFundsException();
+            throw new ApiException(HttpStatus.UNPROCESSABLE_ENTITY, "Insufficient funds to process transaction");
         }
         return newBalance;
     }

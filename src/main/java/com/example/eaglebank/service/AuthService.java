@@ -1,9 +1,9 @@
 package com.example.eaglebank.service;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
-import com.example.eaglebank.exception.ForbiddenException;
-import com.example.eaglebank.exception.UnauthorizedException;
+import com.example.eaglebank.exception.ApiException;
 import com.example.eaglebank.model.domain.ProcessedUser;
 
 @Service
@@ -21,7 +21,7 @@ public class AuthService {
     public String authenticate(final String email, final String phoneNumber) {
         final ProcessedUser user = userService.findUserByEmail(email);
         if (user == null || !user.getPhoneNumber().equals(phoneNumber)) {
-            throw new UnauthorizedException("Invalid credentials");
+            throw new ApiException(HttpStatus.UNAUTHORIZED, "Invalid credentials");
         }
 
         return jwtService.generateToken(user.getId());
@@ -30,18 +30,18 @@ public class AuthService {
     public void requireUserAccess(final String authorizationHeader, final String requestedUserId) {
         final String authenticatedUserId = getAuthenticatedUserId(authorizationHeader);
         if (!authenticatedUserId.equals(requestedUserId)) {
-            throw new ForbiddenException("The user is not allowed to access this resource");
+            throw new ApiException(HttpStatus.FORBIDDEN, "The user is not allowed to access this resource");
         }
     }
 
     public String getAuthenticatedUserId(final String authorizationHeader) {
         if (authorizationHeader == null || !authorizationHeader.startsWith(BEARER_PREFIX)) {
-            throw new UnauthorizedException("Access token is missing or invalid");
+            throw new ApiException(HttpStatus.UNAUTHORIZED, "Access token is missing or invalid");
         }
 
         final String token = authorizationHeader.substring(BEARER_PREFIX.length()).trim();
         if (token.isEmpty()) {
-            throw new UnauthorizedException("Access token is missing or invalid");
+            throw new ApiException(HttpStatus.UNAUTHORIZED, "Access token is missing or invalid");
         }
 
         return jwtService.validateTokenAndGetSubject(token);

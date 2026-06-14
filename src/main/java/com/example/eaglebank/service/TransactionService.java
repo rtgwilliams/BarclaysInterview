@@ -3,9 +3,10 @@ package com.example.eaglebank.service;
 import java.time.Instant;
 import java.util.UUID;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
-import com.example.eaglebank.exception.TransactionNotFoundException;
+import com.example.eaglebank.exception.ApiException;
 import com.example.eaglebank.model.domain.Transaction;
 import com.example.eaglebank.model.json.CreateTransactionRequest;
 import com.example.eaglebank.repository.TransactionRepository;
@@ -49,7 +50,7 @@ public class TransactionService {
         bankAccountService.getAccountForUser(accountNumber, userId);
         final Transaction transaction = transactionRepository.getTransaction(accountNumber, transactionId);
         if (transaction == null) {
-            throw new TransactionNotFoundException(transactionId);
+            throw new ApiException(HttpStatus.NOT_FOUND, "Transaction was not found: " + transactionId);
         }
         return transaction;
     }

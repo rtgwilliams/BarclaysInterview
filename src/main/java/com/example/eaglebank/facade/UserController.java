@@ -2,15 +2,12 @@ package com.example.eaglebank.facade;
 
 import org.springframework.web.bind.annotation.RestController;
 
-import com.example.eaglebank.model.domain.NewUser;
 import com.example.eaglebank.model.domain.ProcessedUser;
-import com.example.eaglebank.model.domain.UserUpdate;
 import com.example.eaglebank.model.json.CreateUserRequest;
 import com.example.eaglebank.model.json.UpdateUserRequest;
 import com.example.eaglebank.model.json.UserResponse;
 import com.example.eaglebank.service.AuthService;
 import com.example.eaglebank.service.UserService;
-import com.example.eaglebank.transformer.UserTransformer;
 import com.example.eaglebank.validation.UserRequestValidator;
 
 import org.springframework.http.HttpStatus;
@@ -29,17 +26,14 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 public class UserController {
 
     private final UserService userService;
-    private final UserTransformer userTransformer;
     private final UserRequestValidator userRequestValidator;
     private final AuthService authService;
 
     public UserController(
             final UserService userService,
-            final UserTransformer userTransformer,
             final UserRequestValidator userRequestValidator,
             final AuthService authService) {
         this.userService = userService;
-        this.userTransformer = userTransformer;
         this.userRequestValidator = userRequestValidator;
         this.authService = authService;
     }
@@ -48,10 +42,7 @@ public class UserController {
     @ResponseStatus(HttpStatus.CREATED)
     public UserResponse createUser(@RequestBody final CreateUserRequest user) {
         userRequestValidator.validateCreateUser(user);
-        final NewUser newUser = userTransformer.toNewUser(user);
-        final ProcessedUser createdUser = userService.createUser(newUser);
-
-        return userTransformer.toUserResponse(createdUser);
+        return toResponse(userService.createUser(user));
     }
 
     @GetMapping("/{userId}")
@@ -62,7 +53,7 @@ public class UserController {
         userRequestValidator.validateUserId(userId);
         authService.requireUserAccess(authorizationHeader, userId);
         final ProcessedUser processedUser = userService.getUser(userId);
-        return userTransformer.toUserResponse(processedUser);
+        return toResponse(processedUser);
     }
 
     @DeleteMapping("/{userId}")
@@ -84,8 +75,17 @@ public class UserController {
         userRequestValidator.validateUserId(userId);
         authService.requireUserAccess(authorizationHeader, userId);
         userRequestValidator.validateUpdateUser(user);
-        final UserUpdate userUpdate = userTransformer.toUserUpdate(user);
-        final ProcessedUser updatedUser = userService.updateUser(userId, userUpdate);
-        return userTransformer.toUserResponse(updatedUser);
+        return toResponse(userService.updateUser(userId, user));
+    }
+
+    private UserResponse toResponse(final ProcessedUser processedUser) {
+        return new UserResponse(
+                processedUser.getId(),
+                processedUser.getName(),
+                processedUser.getAddress(),
+                processedUser.getPhoneNumber(),
+                processedUser.getEmail(),
+                processedUser.getCreatedTimestamp(),
+                processedUser.getUpdatedTimestamp());
     }
 }
