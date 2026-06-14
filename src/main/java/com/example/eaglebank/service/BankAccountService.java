@@ -84,7 +84,7 @@ public class BankAccountService {
 
         final BigDecimal newBalance = currentBalance.subtract(amount).setScale(2);
         if (newBalance.compareTo(ZERO) < 0) {
-            throw new ApiException(HttpStatus.UNPROCESSABLE_ENTITY, "Insufficient funds to process transaction");
+            throw new ApiException(HttpStatus.valueOf(422), "Insufficient funds to process transaction");
         }
         return newBalance;
     }
