@@ -13,9 +13,7 @@ public class AuthService {
     private final UserService userService;
     private final JwtService jwtService;
 
-    public AuthService(
-            final UserService userService,
-            final JwtService jwtService) {
+    public AuthService(final UserService userService, final JwtService jwtService) {
         this.userService = userService;
         this.jwtService = jwtService;
     }
@@ -30,13 +28,6 @@ public class AuthService {
     }
 
     public void requireUserAccess(final String authorizationHeader, final String requestedUserId) {
-        final String authenticatedUserId = getAuthenticatedUserId(authorizationHeader);
-        if (!authenticatedUserId.equals(requestedUserId)) {
-            throw new ForbiddenException("The user is not allowed to access this resource");
-        }
-    }
-
-    private String getAuthenticatedUserId(final String authorizationHeader) {
         if (authorizationHeader == null || !authorizationHeader.startsWith(BEARER_PREFIX)) {
             throw new UnauthorizedException("Access token is missing or invalid");
         }
@@ -46,6 +37,9 @@ public class AuthService {
             throw new UnauthorizedException("Access token is missing or invalid");
         }
 
-        return jwtService.validateTokenAndGetSubject(token);
+        final String authenticatedUserId = jwtService.validateTokenAndGetSubject(token);
+        if (!authenticatedUserId.equals(requestedUserId)) {
+            throw new ForbiddenException("The user is not allowed to access this resource");
+        }
     }
 }
