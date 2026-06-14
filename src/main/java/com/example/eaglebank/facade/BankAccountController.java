@@ -20,6 +20,7 @@ import com.example.eaglebank.validation.BankAccountRequestValidator;
 @RestController
 @RequestMapping("/v1/accounts")
 public class BankAccountController {
+    
     private final BankAccountService bankAccountService;
     private final AuthService authService;
     private final BankAccountRequestValidator bankAccountRequestValidator;

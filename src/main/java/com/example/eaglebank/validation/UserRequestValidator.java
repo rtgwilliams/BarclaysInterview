@@ -16,7 +16,6 @@ import com.example.eaglebank.model.json.UpdateUserRequest;
 @Component
 public class UserRequestValidator {
     private static final Pattern USER_ID_PATTERN = Pattern.compile("^usr-[A-Za-z0-9]+$");
-    private static final Pattern PHONE_NUMBER_PATTERN = Pattern.compile("^\\+[1-9]\\d{1,14}$");
     private static final Pattern EMAIL_PATTERN = Pattern.compile("^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$");
 
     public void validateUserId(final String userId) {
@@ -38,7 +37,6 @@ public class UserRequestValidator {
         requireAddress(user.getAddress(), details);
         requireString(user.getPhoneNumber(), "phoneNumber", details);
         requireString(user.getEmail(), "email", details);
-        validatePhoneNumber(user.getPhoneNumber(), details);
         validateEmail(user.getEmail(), details);
 
         throwIfInvalid(details);
@@ -57,7 +55,6 @@ public class UserRequestValidator {
         if (user.getAddress() != null) {
             requireAddress(user.getAddress(), details);
         }
-        validatePhoneNumber(user.getPhoneNumber(), details);
         validateEmail(user.getEmail(), details);
 
         throwIfInvalid(details);
@@ -73,7 +70,6 @@ public class UserRequestValidator {
         requireString(authenticationRequest.getEmail(), "email", details);
         requireString(authenticationRequest.getPhoneNumber(), "phoneNumber", details);
         validateEmail(authenticationRequest.getEmail(), details);
-        validatePhoneNumber(authenticationRequest.getPhoneNumber(), details);
 
         throwIfInvalid(details);
     }
@@ -93,12 +89,6 @@ public class UserRequestValidator {
     private void requireString(final String value, final String field, final List<ValidationError> details) {
         if (isBlank(value)) {
             details.add(new ValidationError(field, "is required", "required"));
-        }
-    }
-
-    private void validatePhoneNumber(final String phoneNumber, final List<ValidationError> details) {
-        if (phoneNumber != null && !PHONE_NUMBER_PATTERN.matcher(phoneNumber).matches()) {
-            details.add(new ValidationError("phoneNumber", "must be a valid international phone number", "format"));
         }
     }
 

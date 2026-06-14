@@ -21,6 +21,7 @@ import com.example.eaglebank.validation.TransactionRequestValidator;
 @RestController
 @RequestMapping("/v1/accounts/{accountNumber}/transactions")
 public class TransactionController {
+    
     private final TransactionService transactionService;
     private final AuthService authService;
     private final BankAccountRequestValidator bankAccountRequestValidator;

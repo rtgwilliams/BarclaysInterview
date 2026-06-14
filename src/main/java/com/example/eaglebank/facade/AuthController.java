@@ -15,6 +15,7 @@ import com.example.eaglebank.validation.UserRequestValidator;
 @RestController
 @RequestMapping("/v1/auth")
 public class AuthController {
+    
     private final AuthService authService;
     private final UserRequestValidator userRequestValidator;
 
