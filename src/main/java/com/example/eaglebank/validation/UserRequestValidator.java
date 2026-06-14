@@ -4,12 +4,16 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
 
+import org.springframework.stereotype.Component;
+
 import com.example.eaglebank.exception.BadRequestException;
 import com.example.eaglebank.model.domain.Address;
+import com.example.eaglebank.model.json.AuthenticationRequest;
 import com.example.eaglebank.model.json.BadRequestErrorResponse.ValidationError;
 import com.example.eaglebank.model.json.CreateUserRequest;
 import com.example.eaglebank.model.json.UpdateUserRequest;
 
+@Component
 public class UserRequestValidator {
     private static final Pattern USER_ID_PATTERN = Pattern.compile("^usr-[A-Za-z0-9]+$");
     private static final Pattern PHONE_NUMBER_PATTERN = Pattern.compile("^\\+[1-9]\\d{1,14}$");
@@ -36,6 +40,21 @@ public class UserRequestValidator {
         requireString(user.getEmail(), "email", details);
         validatePhoneNumber(user.getPhoneNumber(), details);
         validateEmail(user.getEmail(), details);
+
+        throwIfInvalid(details);
+    }
+
+    public void validateAuthentication(final AuthenticationRequest authenticationRequest) {
+        final List<ValidationError> details = new ArrayList<>();
+        if (authenticationRequest == null) {
+            details.add(new ValidationError("body", "request body is required", "required"));
+            throwIfInvalid(details);
+        }
+
+        requireString(authenticationRequest.getEmail(), "email", details);
+        requireString(authenticationRequest.getPhoneNumber(), "phoneNumber", details);
+        validateEmail(authenticationRequest.getEmail(), details);
+        validatePhoneNumber(authenticationRequest.getPhoneNumber(), details);
 
         throwIfInvalid(details);
     }
