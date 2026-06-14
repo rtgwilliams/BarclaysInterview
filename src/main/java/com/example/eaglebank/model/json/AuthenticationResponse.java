@@ -1,0 +1,11 @@
+package com.example.eaglebank.model.json;
+
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+
+@Getter
+@AllArgsConstructor
+public class AuthenticationResponse {
+    private final String token;
+    private final String tokenType;
+}
