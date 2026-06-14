@@ -1,29 +1,28 @@
 package com.example.eaglebank.repository;
 
 import java.util.Map;
-import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 import com.example.eaglebank.model.domain.ProcessedUser;
 
 public class UserRepository {
 
-    private Map<UUID, ProcessedUser> userDatabase = new ConcurrentHashMap<>();
+    private final Map<String, ProcessedUser> userDatabase = new ConcurrentHashMap<>();
 
     public void createUser(final ProcessedUser user) {
-        userDatabase.put(user.getUserId(), user);
+        userDatabase.put(user.getId(), user);
     }
 
-    public ProcessedUser getUser(final UUID userId) {
+    public ProcessedUser getUser(final String userId) {
         return userDatabase.get(userId);
     }
 
-    public void deleteUser(final UUID userId) {
+    public void deleteUser(final String userId) {
         userDatabase.remove(userId);
     }
 
     public ProcessedUser updateUser(final ProcessedUser user) {
-        userDatabase.put(user.getUserId(), user);
+        userDatabase.put(user.getId(), user);
         return user;
     }
 }

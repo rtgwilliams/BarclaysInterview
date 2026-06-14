@@ -5,7 +5,7 @@ import lombok.Getter;
 
 @Getter
 @AllArgsConstructor
-public class NewUser {
+public class UserUpdate {
     private final String name;
     private final Address address;
     private final String phoneNumber;
